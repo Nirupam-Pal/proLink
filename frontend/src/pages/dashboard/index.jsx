@@ -118,7 +118,7 @@ export default function Dashboard() {
                   return (
                     <div key={post._id || index} className={styles.singleCard}>
                       <div className={styles.singleCard__profileContainer}>
-                        {/* <img className={styles.userProfile2} src={`${BASE_URL}/${post.userId.profilePicture}`} alt="" /> */}
+                        {/* <img className={styles.userProfile2} src={normalizePicture(post.userId.profilePicture)} alt="" /> */}
                         <img className={styles.userProfile2} src={normalizePicture(post.userId.profilePicture)} alt="" />
 
                         <div className={styles.profileText}>
@@ -168,7 +168,7 @@ export default function Dashboard() {
 
                         <div className={styles.singleCard__image}>
                           {post.media !== "" ? <img src={`${BASE_URL}/${post.media}`} alt="" /> : <></>}
-                          
+
                         </div>
 
 
