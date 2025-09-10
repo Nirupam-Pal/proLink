@@ -50,6 +50,13 @@ export default function Dashboard() {
     }));
   };
 
+  const normalizePicture = (pic) => {
+    if (pic.startsWith("http")) {
+      return pic;
+    }
+    return `${BASE_URL}${pic}`;
+  }
+
 
   const handleUpload = async () => {
     await dispatch(createPost({ file: fileContent, body: postContent }));
@@ -69,7 +76,7 @@ export default function Dashboard() {
 
             <div className={styles.wrapper}>
               <div className={styles.createPostContainer}>
-                <img className={styles.userProfile} src={`${BASE_URL}/${authState.user.userId.profilePicture}`} alt="" />
+                <img className={styles.userProfile} src={normalizePicture(authState.user.userId.profilePicture)} alt="" />
                 <textarea onChange={(e) => setPostContent(e.target.value)} value={postContent} className={styles.textAreaOfContent} name="" id="" placeholder="What's in your mind?"></textarea>
                 <label htmlFor="fileUpload">
                   <div className={styles.Fab}>
@@ -111,7 +118,7 @@ export default function Dashboard() {
                   return (
                     <div key={post._id || index} className={styles.singleCard}>
                       <div className={styles.singleCard__profileContainer}>
-                        <img className={styles.userProfile2} src={`${BASE_URL}/${post.userId.profilePicture}`} alt="" />
+                        <img className={styles.userProfile2} src={normalizePicture(post.userId.profilePicture)} alt="" />
 
                         <div className={styles.profileText}>
                           <p className={styles.profileName}>{post.userId.name}</p>
@@ -160,7 +167,7 @@ export default function Dashboard() {
 
                         <div className={styles.singleCard__image}>
                           {post.media !== "" ? <img src={`${BASE_URL}/${post.media}`} alt="" /> : <></>}
-                          
+
                         </div>
 
 
@@ -223,7 +230,7 @@ export default function Dashboard() {
                       return (
                         <div className={styles.singleComment} key={commentText._id}>
                           <div className={styles.singleComment_profileContainer}>
-                            <img src={`${BASE_URL}/${comment.userId.profilePicture}`} alt="" />
+                            <img src={normalizePicture(comment.userId.profilePicture)} alt="" />
                             <div>
                               <p style={{ fontWeight: "bold", fontSize: "1rem" }}>{comment.userId.username}</p>
                             </div>
