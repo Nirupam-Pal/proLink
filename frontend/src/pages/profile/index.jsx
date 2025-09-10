@@ -108,8 +108,8 @@ export default function Profile() {
                   updateProfilePicture(e.target.files[0])
                 }} style={{ display: "none" }} type="file" id='profilePictureUpload' />
               </label>
-              {/* <img src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" /> */}
-              <img src={normalizePicture(userProfile.userId.profilePicture)} alt="backdrop" />
+              <img src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" />
+              {/* <img src={normalizePicture(userProfile.userId.profilePicture)} alt="backdrop" /> */}
             </div>
 
             <div className={styles.profileContainer_details}>
