@@ -88,11 +88,28 @@ export default function Profile() {
   }
 
   const normalizePicture = (pic) => {
-    if (pic.startsWith("http")) {
+    if (!pic) return "/default-profile.png";
+
+    // If pic is an object with a url property (new backend format)
+    if (typeof pic === "object" && pic.url) {
+      return pic.url;
+    }
+
+    // If pic is already a URL string
+    if (typeof pic === "string" && pic.startsWith("http")) {
       return pic;
     }
+
+    // Otherwise treat it as relative path from backend
     return `${BASE_URL}${pic}`;
-  }
+  };
+
+  const normalizeMedia = (media) => {
+    if (!media) return "";
+    if (media.startsWith("http")) return media; // full URL already
+    // Cloudinary base URL
+    return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
+  };
 
 
 
@@ -149,7 +166,7 @@ export default function Profile() {
                         <div className={styles.card}>
                           <div className={styles.card__profileContainer}>
 
-                            {post.media !== "" ? <img src={`${BASE_URL}/${post.media}`} alt='' />
+                            {post.media !== "" ? <img src={normalizeMedia(post.media)} alt='' />
                               : <div style={{ width: "3.4rem", height: "3.4rem" }}></div>}
 
 

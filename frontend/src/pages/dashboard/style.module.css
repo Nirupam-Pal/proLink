@@ -139,6 +139,7 @@
 
 .singleCard__image > img {
   width: 100%;
+  max-height: 600px;
   border-radius: 8px;
   object-fit: cover;
 }

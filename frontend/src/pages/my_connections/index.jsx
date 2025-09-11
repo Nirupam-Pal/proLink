@@ -28,12 +28,21 @@ export default function MyConnectionsPage() {
   }, [authState.connectionRequest])
 
   const normalizePicture = (pic) => {
-    if (!pic) return "";
-    if (pic.startsWith("http")) {
+    if (!pic) return "/default-profile.png";
+
+    // If pic is an object with a url property (new backend format)
+    if (typeof pic === "object" && pic.url) {
+      return pic.url;
+    }
+
+    // If pic is already a URL string
+    if (typeof pic === "string" && pic.startsWith("http")) {
       return pic;
     }
+
+    // Otherwise treat it as relative path from backend
     return `${BASE_URL}${pic}`;
-  }
+  };
 
 
 

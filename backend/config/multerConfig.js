@@ -6,7 +6,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "proconnect_uploads",
-    allowed_formats: ["jpg", "png", "jpeg", "gif", "mp4", "mov", "pdf", "doc", "docx"],
+    allowed_formats: ["jpg", "png", "jpeg", "webp", "gif", "mp4", "mov", "pdf", "doc", "docx"],
   },
 });
 
