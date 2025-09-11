@@ -27,6 +27,13 @@ export default function MyConnectionsPage() {
     }
   }, [authState.connectionRequest])
 
+  const normalizePicture = (pic) => {
+    if (!pic) return "";
+    if (pic.startsWith("http")) {
+      return pic;
+    }
+    return `${BASE_URL}${pic}`;
+  }
 
 
 
@@ -36,7 +43,7 @@ export default function MyConnectionsPage() {
 
 
       <DashboardLayout>
-        <div style={{display: "flex", flexDirection: "column", gap: "1.2rem"}}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
           <h3>My Connection Requests</h3>
           {authState.connectionRequest.length === 0 && <h2>No Connection Request Pending</h2>}
 
@@ -52,8 +59,9 @@ export default function MyConnectionsPage() {
                 <div className={styles.profilePicture}>
                   <img
                     className={styles.userCard_image}
-                    src={`${BASE_URL}/${user.userId.profilePicture}`}
-                    alt=""
+                    // src={`${BASE_URL}/${user.userId.profilePicture}`}
+                    src={normalizePicture(user.userId.profilePicture)}
+                    alt="dp"
                     style={{ width: "55px", height: "55px", borderRadius: "50%" }}
                   />
                 </div>
@@ -61,7 +69,7 @@ export default function MyConnectionsPage() {
                   <h4 style={{ margin: 0 }}>{user.userId.name}</h4>
                   <p style={{ margin: 0, color: "#888" }}>{user.userId.username}</p>
                 </div>
-                <button onClick={(e)=>{
+                <button onClick={(e) => {
                   e.stopPropagation()
 
                   dispatch(AcceptConnection({
@@ -104,8 +112,9 @@ export default function MyConnectionsPage() {
                   <div className={styles.profilePicture}>
                     <img
                       className={styles.userCard_image}
-                      src={`${BASE_URL}/${u.profilePicture}`}
-                      alt=""
+                      src={normalizePicture(u.profilePicture)}
+                      // src={`${BASE_URL}/${u.profilePicture}`}
+                      alt="dp"
                       style={{ width: "55px", height: "55px", borderRadius: "50%" }}
                     />
                   </div>
