@@ -62,6 +62,13 @@ export default function ViewProfilePage({ userProfile }) {
     getUserPost()
   }, [])
 
+  const normalizePicture = (pic) => {
+    if (pic.startsWith("http")) {
+      return pic;
+    }
+    return `${BASE_URL}${pic}`;
+  }
+
 
 
 
@@ -72,7 +79,8 @@ export default function ViewProfilePage({ userProfile }) {
       <DashboardLayout>
         <div className={styles.container}>
           <div className={styles.backDropContainer}>
-            <img className={styles.backDrop} src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" />
+            {/* <img className={styles.backDrop} src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" /> */}
+            <img className={styles.backDrop} src={normalizePicture(userProfile.userId.profilePicture)} alt="" />
           </div>
 
           <div className={styles.profileContainer_details}>

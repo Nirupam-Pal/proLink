@@ -189,16 +189,24 @@ export const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const uploadedUrl = req.file?.path || "";
-    if (!uploadedUrl) {
-      return res.status(400).json({ message: "No file uploaded or upload failed" });
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    user.profilePicture = uploadedUrl;
+    user.profilePicture = {
+      url: req.file.path,       // Cloudinary URL
+      filename: req.file.filename // Cloudinary public_id
+    };
+
     await user.save();
 
-    return res.json({ message: "Profile picture updated", url: uploadedUrl });
+    return res.json({
+      message: "Profile picture updated",
+      profilePicture: user.profilePicture
+    });
+    
   } catch (error) {
+    console.error("uploadProfilePicture error:", error);
     return res.status(500).json({ message: error.message });
   }
 };

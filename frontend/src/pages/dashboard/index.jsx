@@ -22,7 +22,7 @@ export default function Dashboard() {
     if (localStorage.getItem('token') === null) {
       router.push("/login")
     }
-  })
+  }, [])
 
   useEffect(() => {
     if (authState.isTokenThere) {
@@ -51,6 +51,7 @@ export default function Dashboard() {
   };
 
   const normalizePicture = (pic) => {
+    if(!pic) return "";
     if (pic.startsWith("http")) {
       return pic;
     }
@@ -231,8 +232,6 @@ export default function Dashboard() {
                       return (
                         <div className={styles.singleComment} key={commentText._id}>
                           <div className={styles.singleComment_profileContainer}>
-                            {/* <img src={`${BASE_URL}/${comment.userId.profilePicture}`} alt="" /> */}
-                            <img src={normalizePicture(comment.userId.profilePicture)} alt="" />
                             <div>
                               <p style={{ fontWeight: "bold", fontSize: "1rem" }}>{comment.userId.username}</p>
                             </div>
