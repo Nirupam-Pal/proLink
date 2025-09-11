@@ -23,21 +23,27 @@ export default function DiscoverPage() {
     }
   }, [])
 
+  const normalizePicture = (pic) => {
+    if (!pic) return "";
+    if (pic.startsWith("http")) {
+      return pic;
+    }
+    return `${BASE_URL}${pic}`;
+  }
+
   return (
     <UserLayout>
 
       <DashboardLayout>
         <div>
-          <h1 style={{textAlign: "center"}}>Discover</h1>
+          <h1 style={{ textAlign: "center" }}>Discover</h1>
           <div className={styles.allUserProfile}>
-            {authState.all_profiles_fetched && (authState.user ? authState.all_users.filter((u)=> u.userId._id && authState.user?.userId?._id && u.userId._id !== authState.user.userId._id) : authState.all_users).map((user) => {
+            {authState.all_profiles_fetched && (authState.user ? authState.all_users.filter((u) => u.userId._id && authState.user?.userId?._id && u.userId._id !== authState.user.userId._id) : authState.all_users).map((user) => {
               return (
-                <div onClick={()=>{
+                <div onClick={() => {
                   router.push(`/view_profile/${user.userId?.username}`)
                 }} key={user._id} className={styles.userCard}>
-                  <img className={styles.userCard_img} src={user.userId?.profilePicture
-                ? `${BASE_URL}/${user.userId.profilePicture}`
-                : "/default-profile.png"} alt="profile" />
+                  <img className={styles.userCard_img} src={normalizePicture(user.userId.profilePicture)} alt="profile" />
                   <div>
                     <h1>{user.userId?.name || "unknown"}</h1>
                     <p>{user.userId?.username || "unknown"}</p>
@@ -48,7 +54,7 @@ export default function DiscoverPage() {
           </div>
         </div>
       </DashboardLayout>
-
+{/* rc={normalizePicture(user.userId.profilePicture)} */}
 
     </UserLayout>
   )
