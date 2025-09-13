@@ -69,8 +69,16 @@ export default function Dashboard() {
 
   const normalizeMedia = (media) => {
     if (!media) return "";
-    if (media.startsWith("http")) return media; // full URL already
-    // Cloudinary base URL
+
+    // if media is an object with a url property
+    if (typeof media === "object" && media.url) {
+      media = media.url;
+    }
+
+    if (typeof media !== "string") return "";
+
+    if (media.startsWith("http")) return media;
+
     return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
   };
 
