@@ -28,7 +28,8 @@ export const createPost = async (req, res) => {
 
     await post.save();
 
-    const populatedPost = await post.populate("userId");
+    // Same fields as getAllPosts; never send the author's password hash or token
+    const populatedPost = await post.populate("userId", "name username email profilePicture");
 
     return res.status(200).json({ message: "Post Created", post: populatedPost });
   } catch (err) {
@@ -39,10 +40,11 @@ export const createPost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
   try {
+    // lean(): read-only JSON, skips building full Mongoose documents
     const posts = await Post.find().populate(
       "userId",
       "name username email profilePicture"
-    );
+    ).lean();
     return res.json({ posts });
   } catch (err) {
     return res.status(500).json({ message: err.message });
@@ -126,7 +128,7 @@ export const get_comment_by_post = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    const comments = await Comment.find({postId: post_id}).populate("userId", "username name");
+    const comments = await Comment.find({postId: post_id}).populate("userId", "username name").lean();
 
     return res.json(comments.reverse());
   } catch (err) {
@@ -169,15 +171,12 @@ export const increment_likes = async(req, res)=>{
 
   try{
 
-    const post  = await Post.findOne({_id: post_id});
+    // One atomic update instead of read-then-save (also no lost likes on concurrent clicks)
+    const post = await Post.findByIdAndUpdate(post_id, { $inc: { likes: 1 } });
 
     if(!post){
       return res.status(404).json({message: "Post not found"});
     }
-
-    post.likes = post.likes + 1;
-
-    await post.save();
 
     return res.json({message: "Likes incremented"});
     

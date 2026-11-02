@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllPosts } from '@/config/redux/action/postAction';
 import { getConnectionsRequest, getMyConnectionRequests, sendConnectionRequest } from '@/config/redux/action/authAction';
+import { normalizeMedia, normalizePicture } from '@/utils/media';
 
 export default function ViewProfilePage({ userProfile }) {
 
@@ -22,16 +23,20 @@ export default function ViewProfilePage({ userProfile }) {
 
   const [isConnectionNull, setIsConnectionNull] = useState(true)
 
+  // Independent requests: run them in parallel instead of one after another
   const getUserPost = async () => {
-    await dispatch(getAllPosts());
-    await dispatch(getConnectionsRequest({ token: localStorage.getItem("token") }));
-    await dispatch(getMyConnectionRequests({ token: localStorage.getItem("token") }));
+    const token = localStorage.getItem("token");
+    await Promise.all([
+      dispatch(getAllPosts()),
+      dispatch(getConnectionsRequest({ token })),
+      dispatch(getMyConnectionRequests({ token })),
+    ]);
   }
 
   useEffect(() => {
 
     let post = postReducer.posts.filter((post) => {
-      return post.userId.username === router.query.username
+      return post.userId?.username === router.query.username
     })
 
     setUserPosts(post);
@@ -62,38 +67,6 @@ export default function ViewProfilePage({ userProfile }) {
     getUserPost()
   }, [])
 
-  const normalizePicture = (pic) => {
-    if (!pic) return "/default-profile.png";
-
-    // If pic is an object with a url property (new backend format)
-    if (typeof pic === "object" && pic.url) {
-      return pic.url;
-    }
-
-    // If pic is already a URL string
-    if (typeof pic === "string" && pic.startsWith("http")) {
-      return pic;
-    }
-
-    // Otherwise treat it as relative path from backend
-    return `${BASE_URL}${pic}`;
-  };
-
-  const normalizeMedia = (media) => {
-    if (!media) return "";
-
-    // if media is an object with a url property
-    if (typeof media === "object" && media.url) {
-      media = media.url;
-    }
-
-    if (typeof media !== "string") return "";
-
-    if (media.startsWith("http")) return media;
-
-    return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
-  };
-
   return (
     <UserLayout>
 
@@ -101,7 +74,7 @@ export default function ViewProfilePage({ userProfile }) {
         <div className={styles.container}>
           <div className={styles.backDropContainer}>
             {/* <img className={styles.backDrop} src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" /> */}
-            <img className={styles.backDrop} src={normalizePicture(userProfile.userId.profilePicture)} alt="" />
+            <img className={styles.backDrop} src={normalizePicture(userProfile.userId.profilePicture, 400)} alt="" />
           </div>
 
           <div className={styles.profileContainer_details}>
@@ -151,7 +124,7 @@ export default function ViewProfilePage({ userProfile }) {
                       <div className={styles.card}>
                         <div className={styles.card__profileContainer}>
 
-                          {post.media !== "" ? <img src={normalizeMedia(post.media)} alt='' />
+                          {post.media !== "" ? <img src={normalizeMedia(post.media, 160)} alt='' loading="lazy" decoding="async" />
                             : <div style={{ width: "3.4rem", height: "3.4rem" }}></div>}
 
 
@@ -216,13 +189,24 @@ export default function ViewProfilePage({ userProfile }) {
 
 export async function getServerSideProps(context) {
 
-  const request = await clientServer.get("/user/get_profile_based_on_username", {
-    params: {
-      username: context.query.username
-    }
-  })
+  let request;
+  try {
+    request = await clientServer.get("/user/get_profile_based_on_username", {
+      params: {
+        username: context.query.username
+      }
+    })
+  } catch (err) {
+    // Unknown username (or a profile without data) is a 404, not a server crash
+    if (err.response?.status === 404) return { notFound: true };
+    throw err;
+  }
 
-  const response = await request.data
+  if (!request.data.profile) return { notFound: true };
+
+  // Public profile data: let Vercel's CDN serve repeat visits for a few seconds and
+  // refresh it in the background, instead of every view waiting on the backend
+  context.res.setHeader("Cache-Control", "public, s-maxage=10, stale-while-revalidate=30");
 
   return { props: { userProfile: request.data.profile } }
 }

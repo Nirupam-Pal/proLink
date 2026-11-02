@@ -45,5 +45,8 @@ const UserSchema = new mongoose.Schema({
 
 })
 
+// Every authenticated request looks the user up by token
+UserSchema.index({ token: 1 });
+
 const User = mongoose.model("User", UserSchema);
 export default User;

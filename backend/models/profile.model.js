@@ -53,5 +53,7 @@ const profileSchema = new mongoose.Schema({
     }
 });
 
+profileSchema.index({ userId: 1 });
+
 const Profile = mongoose.model('Profile', profileSchema);
 export default Profile;

@@ -1,10 +1,11 @@
-import Head from "next/head";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import Image from "next/image";
+import { Poppins } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import { useRouter } from "next/router";
 import UserLayout from "@/layout/UserLayout";
 
-const inter = Inter({ subsets: ["latin"]});
+// Self-hosted and preloaded by Next.js; only the weights this page uses
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-poppins" });
 
 export default function Home() {
 
@@ -13,7 +14,7 @@ export default function Home() {
 
   return (
     <UserLayout>
-      <div className={styles.container}>
+      <div className={`${styles.container} ${poppins.variable}`}>
 
         <div className={styles.mainContainer}>
 
@@ -28,7 +29,16 @@ export default function Home() {
           </div>
 
           <div className={styles.mainContainer_right}>
-            <img className={styles.img} src="images/img1.png" alt="" />
+            {/* Hero is the LCP element: served resized as WebP/AVIF and preloaded */}
+            <Image
+              className={styles.img}
+              src="/images/img1.png"
+              alt=""
+              width={480}
+              height={480}
+              sizes="(max-width: 480px) 14rem, (max-width: 768px) 18rem, (max-width: 1024px) 22rem, 30rem"
+              priority
+            />
           </div>
 
         </div>

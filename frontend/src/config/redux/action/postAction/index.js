@@ -1,6 +1,5 @@
 import { clientServer } from "@/config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { Comme } from "next/font/google";
 
 export const getAllPosts = createAsyncThunk(
   "post/getAllPosts",
@@ -10,9 +9,10 @@ export const getAllPosts = createAsyncThunk(
 
       return thunkAPI.fulfillWithValue(response.data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response.data);
+      return thunkAPI.rejectWithValue(err.response?.data);
     }
-  }
+  },
+  { condition: (_, { getState }) => !getState().postReducer.postsPending }
 );
 
 export const createPost = createAsyncThunk(
@@ -78,7 +78,7 @@ export const incrementPostLike = createAsyncThunk(
         post_id: post.post_id,
       });
 
-      return thunkAPI.fulfillWithValue(response.data);
+      return thunkAPI.fulfillWithValue({ ...response.data, post_id: post.post_id });
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response.data);
     }

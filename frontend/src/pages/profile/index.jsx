@@ -2,10 +2,11 @@ import DashboardLayout from '@/layout/DashboardLayout'
 import UserLayout from '@/layout/UserLayout'
 import React, { useEffect, useState } from 'react'
 import styles from "./styles.module.css"
-import { BASE_URL, clientServer } from '@/config';
+import { clientServer } from '@/config';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAboutUser } from '@/config/redux/action/authAction';
 import { getAllPosts } from '@/config/redux/action/postAction';
+import { normalizeMedia, normalizePicture } from '@/utils/media';
 
 export default function Profile() {
 
@@ -87,38 +88,6 @@ export default function Profile() {
     dispatch(getAboutUser({ token: localStorage.getItem("token") }))
   }
 
-  const normalizePicture = (pic) => {
-    if (!pic) return "/default-profile.png";
-
-    // If pic is an object with a url property (new backend format)
-    if (typeof pic === "object" && pic.url) {
-      return pic.url;
-    }
-
-    // If pic is already a URL string
-    if (typeof pic === "string" && pic.startsWith("http")) {
-      return pic;
-    }
-
-    // Otherwise treat it as relative path from backend
-    return `${BASE_URL}${pic}`;
-  };
-
-  const normalizeMedia = (media) => {
-    if (!media) return "";
-
-    // if media is an object with a url property
-    if (typeof media === "object" && media.url) {
-      media = media.url;
-    }
-
-    if (typeof media !== "string") return "";
-
-    if (media.startsWith("http")) return media;
-
-    return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
-  };
-
 
 
   return (
@@ -134,7 +103,7 @@ export default function Profile() {
                 }} style={{ display: "none" }} type="file" id='profilePictureUpload' />
               </label>
               {/* <img src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" /> */}
-              <img src={normalizePicture(userProfile.userId.profilePicture)} alt="backdrop" />
+              <img src={normalizePicture(userProfile.userId.profilePicture, 400)} alt="backdrop" />
             </div>
 
             <div className={styles.profileContainer_details}>
@@ -174,7 +143,7 @@ export default function Profile() {
                         <div className={styles.card}>
                           <div className={styles.card__profileContainer}>
 
-                            {post.media !== "" ? <img src={normalizeMedia(post.media)} alt='' />
+                            {post.media !== "" ? <img src={normalizeMedia(post.media, 160)} alt='' loading="lazy" decoding="async" />
                               : <div style={{ width: "3.4rem", height: "3.4rem" }}></div>}
 
 

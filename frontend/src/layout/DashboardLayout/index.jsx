@@ -27,6 +27,11 @@ export default function DashboardLayout({ children }) {
         }
     }, []);
 
+    // Sidebar items navigate with router.push, which (unlike <Link>) doesn't prefetch
+    useEffect(() => {
+        ["/dashboard", "/discover", "/my_connections", "/profile"].forEach((route) => router.prefetch(route));
+    }, []);
+
 
     return (
         <div>

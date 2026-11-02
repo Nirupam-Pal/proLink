@@ -15,5 +15,8 @@ const connectionRequest = new mongoose.Schema({
     }
 })
 
+connectionRequest.index({ userId: 1 });
+connectionRequest.index({ connectionId: 1 });
+
 const ConnectionRequest = mongoose.model('ConnectionRequest', connectionRequest);
 export default ConnectionRequest;

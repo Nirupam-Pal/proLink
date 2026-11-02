@@ -1,5 +1,5 @@
-import { BASE_URL } from '@/config';
 import { AcceptConnection, getConnectionsRequest, getMyConnectionRequests } from '@/config/redux/action/authAction';
+import { normalizePicture } from '@/utils/media';
 import DashboardLayout from '@/layout/DashboardLayout'
 import UserLayout from '@/layout/UserLayout'
 import React, { useEffect } from 'react'
@@ -21,28 +21,6 @@ export default function MyConnectionsPage() {
     dispatch(getConnectionsRequest({ token }));   // outgoing requests (me -> others)
   }, [])
 
-  useEffect(() => {
-    if (authState.connectionRequest.length != 0) {
-
-    }
-  }, [authState.connectionRequest])
-
-  const normalizePicture = (pic) => {
-    if (!pic) return "/default-profile.png";
-
-    // If pic is an object with a url property (new backend format)
-    if (typeof pic === "object" && pic.url) {
-      return pic.url;
-    }
-
-    // If pic is already a URL string
-    if (typeof pic === "string" && pic.startsWith("http")) {
-      return pic;
-    }
-
-    // Otherwise treat it as relative path from backend
-    return `${BASE_URL}${pic}`;
-  };
 
 
 
@@ -71,6 +49,8 @@ export default function MyConnectionsPage() {
                     // src={`${BASE_URL}/${user.userId.profilePicture}`}
                     src={normalizePicture(user.userId.profilePicture)}
                     alt="dp"
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: "55px", height: "55px", borderRadius: "50%" }}
                   />
                 </div>
@@ -124,6 +104,8 @@ export default function MyConnectionsPage() {
                       src={normalizePicture(u.profilePicture)}
                       // src={`${BASE_URL}/${u.profilePicture}`}
                       alt="dp"
+                      loading="lazy"
+                      decoding="async"
                       style={{ width: "55px", height: "55px", borderRadius: "50%" }}
                     />
                   </div>

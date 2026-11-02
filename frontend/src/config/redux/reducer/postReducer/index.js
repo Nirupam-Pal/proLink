@@ -4,12 +4,14 @@ import {
   deletePost,
   getAllComments,
   getAllPosts,
+  incrementPostLike,
 } from "../../action/postAction";
 
 const initialState = {
   posts: [],
   isError: false,
   postFetched: false,
+  postsPending: false,
   isLoading: false,
   loggedin: false,
   message: "",
@@ -29,16 +31,19 @@ const postSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getAllPosts.pending, (state) => {
+        state.postsPending = true;
         state.isLoading = true;
         state.message = "Fetching all the posts...";
       })
       .addCase(getAllPosts.fulfilled, (state, action) => {
+        state.postsPending = false;
         state.isLoading = false;
         state.isError = false;
         state.postFetched = true;
         state.posts = action.payload.posts.reverse();
       })
       .addCase(getAllPosts.rejected, (state, action) => {
+        state.postsPending = false;
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload;
@@ -66,6 +71,11 @@ const postSlice = createSlice({
         const deletedId = action.payload.post_id;
         state.posts = state.posts.filter((p) => p._id !== deletedId);
         state.message = action.payload.message || "Post deleted successfully!";
+      })
+      // The server adds exactly one like, so mirror it locally instead of refetching every post
+      .addCase(incrementPostLike.fulfilled, (state, action) => {
+        const post = state.posts.find((p) => p._id === action.payload.post_id);
+        if (post) post.likes = (post.likes || 0) + 1;
       });
   },
 });

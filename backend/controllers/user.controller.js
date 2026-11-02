@@ -290,7 +290,7 @@ export const getAllUserProfile = async (req, res) => {
     const profiles = await Profile.find().populate(
       "userId",
       "name username email profilePicture"
-    );
+    ).lean();
     return res.json({ profiles });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -361,7 +361,7 @@ export const getMyConnectionRequests = async (req, res) => {
 
     const connections = await ConnectionRequest.find({
       userId: user._id,
-    }).populate("connectionId", "name username email profilePicture");
+    }).populate("connectionId", "name username email profilePicture").lean();
 
     return res.json({ connections });
   } catch (error) {
@@ -381,7 +381,7 @@ export const whatAreMyConnections = async (req, res) => {
 
     const connections = await ConnectionRequest.find({
       connectionId: user._id,
-    }).populate("userId", "name username email profilePicture");
+    }).populate("userId", "name username email profilePicture").lean();
 
     return res.json(connections);
   } catch (error) {

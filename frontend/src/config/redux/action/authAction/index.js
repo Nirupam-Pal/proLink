@@ -1,7 +1,5 @@
 import { clientServer } from "@/config";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { Coiny } from "next/font/google";
-import { connection } from "next/server";
 
 export const loginUser = createAsyncThunk(
   "user/login",
@@ -62,9 +60,11 @@ export const getAboutUser = createAsyncThunk(
 
       return thunkAPI.fulfillWithValue(response.data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response.data);
+      return thunkAPI.rejectWithValue(err.response?.data);
     }
-  }
+  },
+  // Several components ask for the current user on mount; share one request
+  { condition: (_, { getState }) => !getState().auth.aboutUserPending }
 );
 
 export const getAllUsers = createAsyncThunk(
@@ -75,9 +75,10 @@ export const getAllUsers = createAsyncThunk(
 
       return thunkAPI.fulfillWithValue(response.data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response.data);
+      return thunkAPI.rejectWithValue(err.response?.data);
     }
-  }
+  },
+  { condition: (_, { getState }) => !getState().auth.allUsersPending }
 );
 
 export const sendConnectionRequest = createAsyncThunk(

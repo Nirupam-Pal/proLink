@@ -15,5 +15,7 @@ const CommentSchema = new mongoose.Schema({
     }
 })
 
+CommentSchema.index({ postId: 1 });
+
 const Comment = mongoose.model('Comment', CommentSchema);
 export default Comment;

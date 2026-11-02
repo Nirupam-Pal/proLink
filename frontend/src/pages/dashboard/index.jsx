@@ -1,13 +1,12 @@
-import { getAboutUser, getAllUsers } from "@/config/redux/action/authAction";
 import { createPost, deletePost, getAllComments, getAllPosts, incrementPostLike, postComment } from "@/config/redux/action/postAction";
 import DashboardLayout from "@/layout/DashboardLayout";
 import UserLayout from "@/layout/UserLayout";
 import { useRouter } from "next/router";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./style.module.css"
-import { BASE_URL } from "@/config";
 import { resetPostId } from "@/config/redux/reducer/postReducer";
+import { normalizeMedia, normalizePicture } from "@/utils/media";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -18,22 +17,14 @@ export default function Dashboard() {
 
   const postState = useSelector((state) => state.postReducer)
 
+  // DashboardLayout loads the current user and the user list; start posts in parallel with them
   useEffect(() => {
     if (localStorage.getItem('token') === null) {
       router.push("/login")
+    } else {
+      dispatch(getAllPosts());
     }
   }, [])
-
-  useEffect(() => {
-    if (authState.isTokenThere) {
-      dispatch(getAllPosts());
-      dispatch(getAboutUser({ token: localStorage.getItem("token") }));
-    }
-
-    if (!authState.all_profiles_fetched) {
-      dispatch(getAllUsers())
-    }
-  }, [authState.isTokenThere]);
 
   const [postContent, setPostContent] = useState("");
 
@@ -50,43 +41,23 @@ export default function Dashboard() {
     }));
   };
 
-  const normalizePicture = (pic) => {
-    if (!pic) return "/default-profile.png";
+  // createObjectURL allocates a new blob URL on every call, so make it once per file and release it
+  const previewUrl = useMemo(
+    () => (fileContent && fileContent.type.startsWith("image/") ? URL.createObjectURL(fileContent) : null),
+    [fileContent]
+  );
 
-    // If pic is an object with a url property (new backend format)
-    if (typeof pic === "object" && pic.url) {
-      return pic.url;
-    }
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
-    // If pic is already a URL string
-    if (typeof pic === "string" && pic.startsWith("http")) {
-      return pic;
-    }
-
-    // Otherwise treat it as relative path from backend
-    return `${BASE_URL}${pic}`;
-  };
-
-  const normalizeMedia = (media) => {
-    if (!media) return "";
-
-    // if media is an object with a url property
-    if (typeof media === "object" && media.url) {
-      media = media.url;
-    }
-
-    if (typeof media !== "string") return "";
-
-    if (media.startsWith("http")) return media;
-
-    return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
-  };
-
+  // createPost.fulfilled already prepends the new post, so no full refetch is needed
   const handleUpload = async () => {
     await dispatch(createPost({ file: fileContent, body: postContent }));
     setPostContent("")
     setFileContent(null)
-    dispatch(getAllPosts())
   }
 
   if (authState.user) {
@@ -102,7 +73,7 @@ export default function Dashboard() {
               {/* Create Post */}
               <div className={styles.createPostContainer}>
                 {/* <img className={styles.userProfile} src={`${BASE_URL}/${authState.user.userId.profilePicture}`} alt="" /> */}
-                <img className={styles.userProfile} src={normalizePicture(authState.user?.userId?.profilePicture)} alt="" />
+                <img className={styles.userProfile} src={normalizePicture(authState.user?.userId?.profilePicture)} alt="" width={50} height={50} />
                 <textarea onChange={(e) => setPostContent(e.target.value)} value={postContent} className={styles.textAreaOfContent} name="" id="" placeholder="What's in your mind?"></textarea>
                 <label htmlFor="fileUpload">
                   <div className={styles.Fab}>
@@ -128,9 +99,9 @@ export default function Dashboard() {
                     >
                       ✕
                     </span>
-                    {fileContent.type.startsWith("image/") ? (
+                    {previewUrl ? (
                       <img
-                        src={URL.createObjectURL(fileContent)}
+                        src={previewUrl}
                         alt="preview"
                         className={styles.previewImage}
                       />
@@ -147,10 +118,13 @@ export default function Dashboard() {
                   const user = post?.userId; // easy alias
                   if (!user) return null;
 
+                  // First couple of cards are on screen at load; defer the rest until scrolled near
+                  const loading = index < 2 ? "eager" : "lazy";
+
                   return (
                     <div key={post._id || index} className={styles.singleCard}>
                       <div className={styles.singleCard__profileContainer}>
-                        <img className={styles.userProfile2} src={normalizePicture(user?.profilePicture)} alt="" />
+                        <img className={styles.userProfile2} src={normalizePicture(user?.profilePicture)} alt="" width={50} height={50} loading={loading} decoding="async" />
                         {/* <img className={styles.userProfile2} src={`${BASE_URL}/${post.userId.profilePicture}`} alt="" /> */}
 
                         <div className={styles.profileText}>
@@ -161,9 +135,10 @@ export default function Dashboard() {
                         {user?._id === authState.user?.userId?._id && (
                           <div
                             className={styles.deleteBtn}
-                            onClick={async () => {
+                            onClick={() => {
+                              // deletePost.fulfilled removes the post locally; a parallel refetch
+                              // could race the delete and bring the post back
                               dispatch(deletePost({ post_id: post._id }));
-                              dispatch(getAllPosts());
                             }}
                           >
                             <svg
@@ -201,16 +176,16 @@ export default function Dashboard() {
                         {/* Media */}
                         <div className={styles.singleCard__image}>
                           {post.media ? (
-                            <img src={normalizeMedia(post.media)} alt="" />
+                            <img src={normalizeMedia(post.media)} alt="" loading={loading} decoding="async" />
                           ) : null}
                         </div>
 
 
                         {/* Options */}
                         <div className={styles.optionsContainer}>
-                          <div onClick={async () => {
-                            await dispatch(incrementPostLike({ post_id: post._id, user_id: authState.user?.userId?._id }))
-                            await dispatch(getAllPosts())
+                          <div onClick={() => {
+                            // incrementPostLike.fulfilled bumps the count locally; no full refetch
+                            dispatch(incrementPostLike({ post_id: post._id, user_id: authState.user?.userId?._id }))
                           }} className={styles.singleOption__optionsContainer}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
@@ -264,7 +239,7 @@ export default function Dashboard() {
                   <div>
                     {postState.comments.map((comment, index) => {
                       return (
-                        <div className={styles.singleComment} key={commentText._id}>
+                        <div className={styles.singleComment} key={comment._id || index}>
                           <div className={styles.singleComment_profileContainer}>
                             <div>
                               <p style={{ fontWeight: "bold", fontSize: "1rem" }}>{comment?.userId?.username}</p>

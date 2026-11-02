@@ -14,7 +14,9 @@ const initialState = {
   connections: [],
   connectionRequest: [],
   all_users: [],
-  all_profiles_fetched: false
+  all_profiles_fetched: false,
+  aboutUserPending: false,
+  allUsersPending: false
 };
 
 const authSlice = createSlice({
@@ -72,17 +74,31 @@ const authSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
       })
+      .addCase(getAboutUser.pending, (state)=>{
+        state.aboutUserPending = true;
+      })
       .addCase(getAboutUser.fulfilled, (state, action)=>{
+        state.aboutUserPending = false;
         state.isLoading = false;
         state.isError = false;
         state.profileFetched = true;
         state.user = action.payload.profile;
       })
+      .addCase(getAboutUser.rejected, (state)=>{
+        state.aboutUserPending = false;
+      })
+      .addCase(getAllUsers.pending, (state)=>{
+        state.allUsersPending = true;
+      })
       .addCase(getAllUsers.fulfilled, (state, action)=>{
+        state.allUsersPending = false;
         state.isLoading = false;
         state.isError = false;
         state.all_profiles_fetched = true;
         state.all_users = action.payload.profiles
+      })
+      .addCase(getAllUsers.rejected, (state)=>{
+        state.allUsersPending = false;
       })
       .addCase(getConnectionsRequest.fulfilled, (state,action)=>{
         state.connections = action.payload;

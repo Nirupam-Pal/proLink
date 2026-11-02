@@ -1,5 +1,5 @@
 .container{
-    font-family: "Poppins", sans-serif;
+    font-family: var(--font-poppins), "Poppins", sans-serif;
     padding: 1.2rem;
     background-image: linear-gradient(to bottom, white, #dbeafe, white);
 }
@@ -38,6 +38,12 @@
     /* Smooth animated shine */
     animation: purpleGlowMove 3s ease-in-out infinite alternate;
     background-size: 200% 200%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mainContainer_left > p:nth-child(1) {
+        animation: none;
+    }
 }
 
 @keyframes purpleGlowMove {
