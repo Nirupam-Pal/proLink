@@ -82,6 +82,13 @@
   align-items: center;
 }
 
+.sectionLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-right: var(--s-5);
+}
+
 .profile {
   display: flex;
   align-items: center;

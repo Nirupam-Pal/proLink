@@ -32,6 +32,60 @@ export function useInView({ rootMargin = "0px 0px -10% 0px", threshold = 0.15 } 
   return [ref, inView];
 }
 
+// Writes how far an element has travelled through the viewport to the CSS variable `--p` (0 → 1),
+// straight to the DOM so scrolling never re-renders React. `start`/`end` are viewport fractions:
+// --p is 0 when the element's top reaches `start` and 1 when its bottom reaches `end`.
+// Listens only while the element is near the screen; reduced-motion users get --p: 1 right away.
+export function useScrollProgress({ start = 1, end = 0 } = {}) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      node.style.setProperty("--p", "1");
+      return;
+    }
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const rect = node.getBoundingClientRect();
+      const p = (start * vh - rect.top) / (start * vh - end * vh + rect.height);
+      node.style.setProperty("--p", Math.min(1, Math.max(0, p)).toFixed(4));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          window.addEventListener("scroll", onScroll, { passive: true });
+          window.addEventListener("resize", onScroll, { passive: true });
+        } else {
+          window.removeEventListener("scroll", onScroll);
+          window.removeEventListener("resize", onScroll);
+        }
+        update();
+      },
+      { rootMargin: "20% 0px" }
+    );
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [start, end]);
+
+  return ref;
+}
+
 export default function Reveal({ as: Tag = "div", delay = 0, className = "", style, children, ...rest }) {
   const [ref, inView] = useInView();
 

@@ -2,13 +2,14 @@
   background: var(--ink);
   color: #c9cad1;
   padding: var(--s-8) var(--s-5) var(--s-5);
+  overflow: hidden;
 }
 
 .inner {
   max-width: var(--container);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: var(--s-7);
   padding-bottom: var(--s-7);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -24,6 +25,29 @@
   max-width: 32ch;
   color: #9a9ca8;
   font-size: var(--text-sm);
+}
+
+.cta {
+  margin-top: var(--s-5);
+}
+
+/* Big serif wordmark that fills the width and fades into the base line */
+.wordmark {
+  max-width: var(--container);
+  margin: var(--s-6) auto calc(var(--s-6) * -1);
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 2rem + 17vw, 15rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
+  white-space: nowrap;
+  user-select: none;
+  mask-image: linear-gradient(#000 40%, transparent 92%);
+}
+
+.wordmark em {
+  -webkit-text-stroke-color: rgba(143, 155, 255, 0.45);
 }
 
 .colTitle {
@@ -98,7 +122,7 @@
   }
 
   .inner {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--s-6);
   }
 
@@ -109,5 +133,11 @@
   .base {
     flex-direction: column;
     gap: var(--s-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .inner {
+    grid-template-columns: 1fr 1fr;
   }
 }

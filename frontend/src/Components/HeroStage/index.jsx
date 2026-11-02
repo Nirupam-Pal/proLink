@@ -1,10 +1,13 @@
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { Avatar, PostPreview, ProfilePreview, people } from "@/Components/Landing/Previews";
+import { icons, Icon } from "@/Components/Landing/icons";
 import styles from "./styles.module.css";
 
-// Layered 3D composition built from CSS transforms only (no WebGL): the stage tilts
-// toward the pointer and each layer sits at a different depth, giving real parallax.
-// Pointer tracking is skipped on touch devices and for reduced-motion users.
+// Layered 3D composition built from CSS transforms only (no WebGL): a profile card at the back,
+// a feed post in the middle and two notifications in front. The stage tilts toward the pointer and
+// each layer sits at a different depth, giving real parallax. Pointer tracking is skipped on touch
+// devices and for reduced-motion users; the layers simply sit flat there.
 export default function HeroStage() {
   const stageRef = useRef(null);
 
@@ -21,8 +24,8 @@ export default function HeroStage() {
 
     const apply = () => {
       frame = 0;
-      stage.style.setProperty("--rx", `${(-target.y * 7).toFixed(2)}deg`);
-      stage.style.setProperty("--ry", `${(target.x * 9).toFixed(2)}deg`);
+      stage.style.setProperty("--rx", `${(-target.y * 6).toFixed(2)}deg`);
+      stage.style.setProperty("--ry", `${(target.x * 8).toFixed(2)}deg`);
     };
 
     const onMove = (e) => {
@@ -51,39 +54,42 @@ export default function HeroStage() {
 
   return (
     <div className={styles.host}>
-      <div ref={stageRef} className={styles.stage}>
-        <div className={`${styles.layer} ${styles.plate}`} aria-hidden="true">
-          <span className={styles.ring} />
-          <span className={`${styles.ring} ${styles.ring2}`} />
+      <div ref={stageRef} className={styles.stage} role="img" aria-label="A ProLink post with likes, a profile card and a connection request">
+        <div className={`${styles.layer} ${styles.back}`} aria-hidden="true">
+          <ProfilePreview person={people[0]} compact />
         </div>
 
-        <div className={`${styles.layer} ${styles.art}`}>
-          {/* Hero is the LCP element: served resized as WebP/AVIF and preloaded */}
-          <Image
-            src="/images/img1.png"
-            alt="People connected in a network"
-            width={480}
-            height={480}
-            sizes="(max-width: 480px) 80vw, (max-width: 1024px) 360px, 460px"
-            priority
+        <div className={`${styles.layer} ${styles.mid}`} aria-hidden="true">
+          <PostPreview
+            person={people[0]}
+            body="Shipped my first open-source fix today. Small change, big lesson: read the issue twice."
+            likes={41}
+            autoLike
+            media={
+              // Hero is the LCP element: served resized as WebP/AVIF and preloaded
+              <Image src="/images/img1.png" alt="" fill sizes="(max-width: 768px) 86vw, 340px" priority />
+            }
           />
         </div>
 
-        <div className={`${styles.layer} ${styles.chip} ${styles.chipA}`} aria-hidden="true">
-          <span className={styles.chipDot} />
-          <span>
-            <strong>New connection</strong>
-            <small>Request accepted</small>
+        <div className={`${styles.layer} ${styles.chip} ${styles.chipRequest}`} aria-hidden="true">
+          <Avatar person={people[1]} size={34} />
+          <span className={styles.chipText}>
+            <strong>{people[1].name}</strong>
+            <small>wants to connect</small>
+          </span>
+          <span className={styles.accept}>
+            <Icon d={icons.check} />
           </span>
         </div>
 
-        <div className={`${styles.layer} ${styles.chip} ${styles.chipB}`} aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904" />
-          </svg>
-          <span>
-            <strong>Recent Activity</strong>
-            <small>Stories, no blufs</small>
+        <div className={`${styles.layer} ${styles.chip} ${styles.chipLike}`} aria-hidden="true">
+          <span className={styles.likeBadge}>
+            <Icon d={icons.like} />
+          </span>
+          <span className={styles.chipText}>
+            <strong>{people[2].name}</strong>
+            <small>liked your post</small>
           </span>
         </div>
       </div>

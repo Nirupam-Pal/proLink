@@ -4,6 +4,13 @@ import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { reset } from "@/config/redux/reducer/authReducer";
 
+// In-page sections of the landing page, shown in the navbar only there
+const landingLinks = [
+  { href: "#inside", label: "Product" },
+  { href: "#how", label: "How it works" },
+  { href: "#community", label: "Community" },
+];
+
 export function Logo({ onClick }) {
   return (
     <button type="button" className={styles.brand} onClick={onClick} aria-label="ProLink home">
@@ -41,6 +48,7 @@ const NavbarComponent = () => {
   };
 
   const isProfile = router.pathname === "/profile";
+  const isLanding = router.pathname === "/";
 
   return (
     <header className={`${styles.container} ${scrolled || isOpen ? styles.scrolled : ""}`}>
@@ -49,6 +57,15 @@ const NavbarComponent = () => {
 
         {/* Desktop options */}
         <div className={styles.navbarOptionsContainer}>
+          {isLanding && (
+            <div className={styles.sectionLinks}>
+              {landingLinks.map((link) => (
+                <a key={link.href} href={link.href} className={styles.navLink}>
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
           {authState.profileFetched ? (
             <div className={styles.profile}>
               <button
@@ -88,6 +105,15 @@ const NavbarComponent = () => {
 
       {/* Mobile dropdown */}
       <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ""}`}>
+        {isLanding && (
+          <div className={styles.mobileActions}>
+            {landingLinks.map((link) => (
+              <a key={link.href} href={link.href} className={styles.menuItem} onClick={() => setIsOpen(false)}>
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
         {authState.profileFetched ? (
           <div className={styles.mobileActions}>
             <button
