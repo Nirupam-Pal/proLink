@@ -62,9 +62,37 @@ export default function ViewProfilePage({ userProfile }) {
     getUserPost()
   }, [])
 
+  const normalizePicture = (pic) => {
+    if (!pic) return "/default-profile.png";
 
+    // If pic is an object with a url property (new backend format)
+    if (typeof pic === "object" && pic.url) {
+      return pic.url;
+    }
 
+    // If pic is already a URL string
+    if (typeof pic === "string" && pic.startsWith("http")) {
+      return pic;
+    }
 
+    // Otherwise treat it as relative path from backend
+    return `${BASE_URL}${pic}`;
+  };
+
+  const normalizeMedia = (media) => {
+    if (!media) return "";
+
+    // if media is an object with a url property
+    if (typeof media === "object" && media.url) {
+      media = media.url;
+    }
+
+    if (typeof media !== "string") return "";
+
+    if (media.startsWith("http")) return media;
+
+    return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
+  };
 
   return (
     <UserLayout>
@@ -72,7 +100,8 @@ export default function ViewProfilePage({ userProfile }) {
       <DashboardLayout>
         <div className={styles.container}>
           <div className={styles.backDropContainer}>
-            <img className={styles.backDrop} src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" />
+            {/* <img className={styles.backDrop} src={`${BASE_URL}/${userProfile.userId.profilePicture}`} alt="backdrop" /> */}
+            <img className={styles.backDrop} src={normalizePicture(userProfile.userId.profilePicture)} alt="" />
           </div>
 
           <div className={styles.profileContainer_details}>
@@ -122,7 +151,7 @@ export default function ViewProfilePage({ userProfile }) {
                       <div className={styles.card}>
                         <div className={styles.card__profileContainer}>
 
-                          {post.media !== "" ? <img src={`${BASE_URL}/${post.media}`} alt='' />
+                          {post.media !== "" ? <img src={normalizeMedia(post.media)} alt='' />
                             : <div style={{ width: "3.4rem", height: "3.4rem" }}></div>}
 
 

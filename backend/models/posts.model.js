@@ -22,8 +22,13 @@ const postSchema = new mongoose.Schema({
         default: Date.now
     },
     media:{
-        type: String,
-        default: ''
+        url: {
+            type: String,
+        },
+        filename: {
+            type: String,
+            default: ''
+        }
     },
     active:{
         type: Boolean,

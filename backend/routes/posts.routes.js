@@ -1,21 +1,21 @@
 import { Router } from "express";
 import { activeCheck, commentPost, createPost, delete_comment_of_user, deletePost, get_comment_by_post, increment_likes } from "../controllers/posts.controller.js";
-import upload from "../config/multerConfig.js";
 import { getAllPosts } from "../controllers/posts.controller.js";
+import upload from "../config/multerConfig.js";
 
 const router = Router()
 
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  },
-})
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//     cb(null, "uploads/");
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, file.originalname);
+//   },
+// })
 
-const upload = multer({ storage: storage })
+// const upload = multer({ storage: storage })
 
 
 router.route('/').get(activeCheck);

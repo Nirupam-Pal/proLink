@@ -5,6 +5,7 @@ import crypto from "crypto";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import ConnectionRequest from "../models/connections.model.js";
+import axios from "axios";
 
 // const convertUserDataTOPDF = async (userData) => {
 //   const doc = new PDFDocument();
@@ -40,26 +41,69 @@ const convertUserDataTOPDF = (userData) => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument();
     const outputPath = crypto.randomBytes(32).toString("hex") + ".pdf";
+
+    // Make sure uploads dir exists (for storing the generated PDF temporarily)
+    if (!fs.existsSync("uploads")) {
+      fs.mkdirSync("uploads", { recursive: true });
+    }
+
     const stream = fs.createWriteStream("uploads/" + outputPath);
 
     doc.pipe(stream);
 
+    const profilePic = userData.userId.profilePicture || "";
+
+    if (profilePic) {
+      try {
+        if (typeof profilePic === "string" && profilePic.startsWith("http")) {
+          // Fetch remote image as buffer and embed
+          const resp = axios.get(profilePic, { responseType: "arraybuffer" });
+          const imgBuffer = Buffer.from(resp.data, "binary");
+          try {
+            doc.image(imgBuffer, { align: "center", width: 100 });
+          } catch (imgErr) {
+            // If embedding fails, skip image but continue
+            console.error(
+              "Failed to embed remote image into PDF:",
+              imgErr.message
+            );
+          }
+        } else {
+          // Local file path (previous local-dev behavior)
+          const localPath = `uploads/${profilePic}`;
+          if (fs.existsSync(localPath)) {
+            try {
+              doc.image(localPath, { align: "center", width: 100 });
+            } catch (imgErr) {
+              console.error(
+                "Failed to embed local image into PDF:",
+                imgErr.message
+              );
+            }
+          } else {
+            console.warn("Local profile picture not found at:", localPath);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch or embed profile picture:", err.message);
+      }
+    }
     // Add content
-    doc.image(`uploads/${userData.userId.profilePicture}`, {
-      align: "center",
-      width: 100,
-    });
+    // doc.image(`uploads/${userData.userId.profilePicture}`, {
+    //   align: "center",
+    //   width: 100,
+    // });
     doc.fontSize(14).text(`Name: ${userData.userId.name}`);
     doc.fontSize(14).text(`Username: ${userData.userId.username}`);
     doc.fontSize(14).text(`Email: ${userData.userId.email}`);
-    doc.fontSize(14).text(`Bio: ${userData.bio}`);
-    doc.fontSize(14).text(`Current Position: ${userData.currentPost}`);
+    doc.fontSize(14).text(`Bio: ${userData.bio || ""}`);
+    doc.fontSize(14).text(`Current Position: ${userData.currentPost || ""}`);
     doc.fontSize(14).text("Past Work: ");
 
     userData.pastWork.forEach((work) => {
-      doc.fontSize(14).text(`Company Name: ${work.company}`);
-      doc.fontSize(14).text(`Position: ${work.position}`);
-      doc.fontSize(14).text(`Years: ${work.years}`);
+      doc.fontSize(14).text(`Company Name: ${work.company || ""}`);
+      doc.fontSize(14).text(`Position: ${work.position || ""}`);
+      doc.fontSize(14).text(`Years: ${work.years || ""}`);
     });
 
     doc.end();
@@ -144,12 +188,25 @@ export const uploadProfilePicture = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    user.profilePicture = req.file != undefined ? (req.file.path || req.file.url || req.file.secure_url || req.file.filename || "") : "";
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    user.profilePicture = {
+      url: req.file.path || req.file.secure_url,       // Cloudinary URL
+      filename: req.file.filename // Cloudinary public_id
+    };
 
     await user.save();
 
-    return res.json({ message: "Profile picture updated" });
+    return res.json({
+      message: "Profile picture updated",
+      profilePicture: user.profilePicture
+    });
+    
   } catch (error) {
+    console.error("uploadProfilePicture error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -198,7 +255,7 @@ export const getUserAndProfile = async (req, res) => {
       "name email username profilePicture"
     );
 
-    return res.json({profile});
+    return res.json({ profile });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -313,7 +370,7 @@ export const getMyConnectionRequests = async (req, res) => {
 };
 
 export const whatAreMyConnections = async (req, res) => {
-  const {token} = req.query;
+  const { token } = req.query;
 
   try {
     const user = await User.findOne({ token });
@@ -362,26 +419,25 @@ export const acceptConnectionrequest = async (req, res) => {
   }
 };
 
-export const getUserProfileAndUserBasedOnUserName = async (req, res) =>{
-  
-  const {username} = req.query
+export const getUserProfileAndUserBasedOnUserName = async (req, res) => {
+  const { username } = req.query;
 
-  try{
-
+  try {
     const user = await User.findOne({
-      username
+      username,
     });
 
-    if(!user){
-      return res.status(404).json({ message: "User not found" })
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const userProfile = await Profile.findOne({ userId: user._id })
-    .populate('userId', 'name username email profilePicture');
+    const userProfile = await Profile.findOne({ userId: user._id }).populate(
+      "userId",
+      "name username email profilePicture"
+    );
 
-    return res.json({ "profile": userProfile })
-  }catch(err){
+    return res.json({ profile: userProfile });
+  } catch (err) {
     return res.status(500).json({ message: err.message });
   }
-}
-
+};

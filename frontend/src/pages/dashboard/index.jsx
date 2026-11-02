@@ -22,7 +22,7 @@ export default function Dashboard() {
     if (localStorage.getItem('token') === null) {
       router.push("/login")
     }
-  })
+  }, [])
 
   useEffect(() => {
     if (authState.isTokenThere) {
@@ -50,6 +50,37 @@ export default function Dashboard() {
     }));
   };
 
+  const normalizePicture = (pic) => {
+    if (!pic) return "/default-profile.png";
+
+    // If pic is an object with a url property (new backend format)
+    if (typeof pic === "object" && pic.url) {
+      return pic.url;
+    }
+
+    // If pic is already a URL string
+    if (typeof pic === "string" && pic.startsWith("http")) {
+      return pic;
+    }
+
+    // Otherwise treat it as relative path from backend
+    return `${BASE_URL}${pic}`;
+  };
+
+  const normalizeMedia = (media) => {
+    if (!media) return "";
+
+    // if media is an object with a url property
+    if (typeof media === "object" && media.url) {
+      media = media.url;
+    }
+
+    if (typeof media !== "string") return "";
+
+    if (media.startsWith("http")) return media;
+
+    return `https://res.cloudinary.com/dcdmxqiuv/image/upload/${media}`;
+  };
 
   const handleUpload = async () => {
     await dispatch(createPost({ file: fileContent, body: postContent }));
@@ -68,8 +99,10 @@ export default function Dashboard() {
           <div className={styles.scrollComponent}>
 
             <div className={styles.wrapper}>
+              {/* Create Post */}
               <div className={styles.createPostContainer}>
-                <img className={styles.userProfile} src={`${BASE_URL}/${authState.user.userId.profilePicture}`} alt="" />
+                {/* <img className={styles.userProfile} src={`${BASE_URL}/${authState.user.userId.profilePicture}`} alt="" /> */}
+                <img className={styles.userProfile} src={normalizePicture(authState.user?.userId?.profilePicture)} alt="" />
                 <textarea onChange={(e) => setPostContent(e.target.value)} value={postContent} className={styles.textAreaOfContent} name="" id="" placeholder="What's in your mind?"></textarea>
                 <label htmlFor="fileUpload">
                   <div className={styles.Fab}>
@@ -85,6 +118,8 @@ export default function Dashboard() {
 
               </div>
               <div>
+
+                {/* Preview File */}
                 {fileContent && (
                   <div className={styles.previewContainer}>
                     <span
@@ -106,19 +141,24 @@ export default function Dashboard() {
                 )}
               </div>
 
+              {/* Posts */}
               <div className={styles.postContainer}>
                 {postState.posts.map((post, index) => {
+                  const user = post?.userId; // easy alias
+                  if (!user) return null;
+
                   return (
                     <div key={post._id || index} className={styles.singleCard}>
                       <div className={styles.singleCard__profileContainer}>
-                        <img className={styles.userProfile2} src={`${BASE_URL}/${post.userId.profilePicture}`} alt="" />
+                        <img className={styles.userProfile2} src={normalizePicture(user?.profilePicture)} alt="" />
+                        {/* <img className={styles.userProfile2} src={`${BASE_URL}/${post.userId.profilePicture}`} alt="" /> */}
 
                         <div className={styles.profileText}>
-                          <p className={styles.profileName}>{post.userId.name}</p>
-                          <p className={styles.singleCard__username}>@{post.userId.username}</p>
+                          <p className={styles.profileName}>{user?.name}</p>
+                          <p className={styles.singleCard__username}>@{user?.username}</p>
                         </div>
 
-                        {post.userId._id === authState.user.userId._id && (
+                        {user?._id === authState.user?.userId?._id && (
                           <div
                             className={styles.deleteBtn}
                             onClick={async () => {
@@ -146,8 +186,8 @@ export default function Dashboard() {
                           style={{ paddingTop: "1rem" }}
                           className={expandedPosts[post._id] ? styles.postBodyExpanded : styles.postBody}
                         >
-                          {expandedPosts[post._id] ? post.body : post.body.slice(0, 100)}
-                          {post.body.length > 100 && (
+                          {expandedPosts[post._id] ? post.body || "" : (post.body || "").slice(0, 100)}
+                          {post.body?.length > 100 && (
                             <span
                               onClick={() => toggleExpand(post._id)}
                               className={styles.readMore}
@@ -158,15 +198,18 @@ export default function Dashboard() {
                         </p>
 
 
+                        {/* Media */}
                         <div className={styles.singleCard__image}>
-                          {post.media !== "" ? <img src={`${BASE_URL}/${post.media}`} alt="" /> : <></>}
-                          
+                          {post.media ? (
+                            <img src={normalizeMedia(post.media)} alt="" />
+                          ) : null}
                         </div>
 
 
+                        {/* Options */}
                         <div className={styles.optionsContainer}>
                           <div onClick={async () => {
-                            await dispatch(incrementPostLike({ post_id: post._id, user_id: authState.user.userId._id }))
+                            await dispatch(incrementPostLike({ post_id: post._id, user_id: authState.user?.userId?._id }))
                             await dispatch(getAllPosts())
                           }} className={styles.singleOption__optionsContainer}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -223,9 +266,8 @@ export default function Dashboard() {
                       return (
                         <div className={styles.singleComment} key={commentText._id}>
                           <div className={styles.singleComment_profileContainer}>
-                            <img src={`${BASE_URL}/${comment.userId.profilePicture}`} alt="" />
                             <div>
-                              <p style={{ fontWeight: "bold", fontSize: "1rem" }}>{comment.userId.username}</p>
+                              <p style={{ fontWeight: "bold", fontSize: "1rem" }}>{comment?.userId?.username}</p>
                             </div>
                           </div>
                           <p>
@@ -257,13 +299,9 @@ export default function Dashboard() {
   } else {
     return (
       <UserLayout>
-
-
         <DashboardLayout>
           <h2>Loading...</h2>
         </DashboardLayout>
-
-
       </UserLayout>
     );
   }

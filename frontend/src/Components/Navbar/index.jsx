@@ -18,7 +18,7 @@ const NavbarComponent = () => {
           className={styles.navh1}
           onClick={() => router.push("/")}
         >
-          Pro Connect
+          ProLink
         </h1>
 
         {/* Desktop options */}
