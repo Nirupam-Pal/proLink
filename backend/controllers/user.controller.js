@@ -291,7 +291,8 @@ export const getAllUserProfile = async (req, res) => {
       "userId",
       "name username email profilePicture"
     ).lean();
-    return res.json({ profiles });
+    // Skip profiles whose user account no longer exists
+    return res.json({ profiles: profiles.filter((p) => p.userId) });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -363,7 +364,8 @@ export const getMyConnectionRequests = async (req, res) => {
       userId: user._id,
     }).populate("connectionId", "name username email profilePicture").lean();
 
-    return res.json({ connections });
+    // populate leaves null for a user who no longer exists; leave those requests out
+    return res.json({ connections: connections.filter((c) => c.connectionId) });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -383,7 +385,8 @@ export const whatAreMyConnections = async (req, res) => {
       connectionId: user._id,
     }).populate("userId", "name username email profilePicture").lean();
 
-    return res.json(connections);
+    // populate leaves null for a user who no longer exists; leave those requests out
+    return res.json(connections.filter((c) => c.userId));
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

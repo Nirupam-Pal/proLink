@@ -47,14 +47,15 @@ export default function MyConnectionsPage() {
     dispatch(getConnectionsRequest({ token }));   // outgoing requests (me -> others)
   }, [])
 
-  const pending = (authState.connectionRequest || []).filter((connection) => connection.status_accepted === null);
+  // A request whose other user has since been deleted comes back with that user as null; skip it
+  const pending = (authState.connectionRequest || []).filter((connection) => connection.status_accepted === null && connection.userId);
 
   const acceptedIncoming = (authState.connectionRequest || [])
-    .filter((c) => c.status_accepted === true)
+    .filter((c) => c.status_accepted === true && c.userId)
     .map((c) => ({ other: c.userId }));
 
   const acceptedOutgoing = (authState.connections || [])
-    .filter((c) => c.status_accepted === true)
+    .filter((c) => c.status_accepted === true && c.connectionId)
     .map((c) => ({ other: c.connectionId }));
 
   const acceptedAll = [...acceptedIncoming, ...acceptedOutgoing];
