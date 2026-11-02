@@ -1,4 +1,4 @@
-import { createPost, deletePost, getAllComments, getAllPosts, incrementPostLike, postComment } from "@/config/redux/action/postAction";
+import { createPost, deletePost, getAllComments, getAllPosts, postComment, togglePostLike } from "@/config/redux/action/postAction";
 import DashboardLayout from "@/layout/DashboardLayout";
 import UserLayout from "@/layout/UserLayout";
 import { useRouter } from "next/router";
@@ -257,16 +257,17 @@ export default function Dashboard() {
                     <button
                       type="button"
                       onClick={() => {
-                        // incrementPostLike.fulfilled bumps the count locally; no full refetch
-                        dispatch(incrementPostLike({ post_id: post._id, user_id: me?._id }))
-                        setJustLiked(post._id)
+                        // Updates on screen immediately; the reducer rolls back if the server rejects it
+                        dispatch(togglePostLike(post._id))
+                        setJustLiked(post.isLiked ? null : post._id)
                       }}
                       onAnimationEnd={() => setJustLiked(null)}
-                      className={`${styles.action} ${justLiked === post._id ? styles.liked : ""}`}
-                      aria-label="Like"
+                      className={`${styles.action} ${post.isLiked ? styles.liked : ""} ${justLiked === post._id ? styles.pop : ""}`}
+                      aria-label={post.isLiked ? "Unlike" : "Like"}
+                      aria-pressed={!!post.isLiked}
                     >
                       <Icon d={icons.like} />
-                      <span>{post.likes}</span>
+                      <span>{post.likes || 0}</span>
                     </button>
 
                     <button

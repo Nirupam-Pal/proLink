@@ -1,11 +1,14 @@
 import { clientServer } from "@/config";
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAction, createAsyncThunk } from "@reduxjs/toolkit";
 
 export const getAllPosts = createAsyncThunk(
   "post/getAllPosts",
   async (_, thunkAPI) => {
     try {
-      const response = await clientServer.get("/posts");
+      // The token lets the server mark which posts this user has liked
+      const response = await clientServer.get("/posts", {
+        params: { token: localStorage.getItem("token") || undefined },
+      });
 
       return thunkAPI.fulfillWithValue(response.data);
     } catch (err) {
@@ -69,21 +72,44 @@ export const deletePost = createAsyncThunk(
   }
 );
 
-export const incrementPostLike = createAsyncThunk(
-  "post/incrementLike",
+// Optimistic flip of a post's like on screen (handled in postReducer)
+export const likeToggled = createAction("post/likeToggled");
 
-  async (post, thunkAPI) => {
+// Sends one like toggle; skipped while a request for the same post is still in flight
+export const syncPostLike = createAsyncThunk(
+  "post/syncPostLike",
+  async (post_id, thunkAPI) => {
     try {
-      const response = await clientServer.post("/increment_post_like", {
-        post_id: post.post_id,
+      const response = await clientServer.post("/toggle_post_like", {
+        token: localStorage.getItem("token"),
+        post_id,
       });
 
-      return thunkAPI.fulfillWithValue({ ...response.data, post_id: post.post_id });
+      return thunkAPI.fulfillWithValue(response.data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response.data);
+      return thunkAPI.rejectWithValue({
+        status: err.response?.status,
+        message: err.response?.data?.message || "Something went wrong",
+      });
     }
-  }
+  },
+  { condition: (post_id, { getState }) => !getState().postReducer.likeSync[post_id]?.inFlight }
 );
+
+// Flips the like on screen at once, then brings the server in line. Clicks made while a request is
+// in flight only change the wanted state; when the request returns, one more toggle is sent if the
+// server doesn't match it yet, so rapid clicking never fires one request per click.
+export const togglePostLike = (post_id) => async (dispatch, getState) => {
+  dispatch(likeToggled(post_id));
+
+  for (;;) {
+    const result = await dispatch(syncPostLike(post_id));
+    if (!syncPostLike.fulfilled.match(result)) return;
+
+    const post = getState().postReducer.posts.find((p) => p._id === post_id);
+    if (!post || post.isLiked === result.payload.isLiked) return;
+  }
+};
 
 export const getAllComments = createAsyncThunk(
   "post/getAllComments",

@@ -9,9 +9,10 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    likes:{
-        type: Number,
-        default: 0
+    // One entry per user who liked the post; the like count is derived from this, never stored separately
+    likedBy:{
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        default: []
     },
     createdAt: {
         type: Date,

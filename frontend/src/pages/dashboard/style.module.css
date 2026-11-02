@@ -289,12 +289,17 @@
   transform: scale(0.88);
 }
 
-/* One-shot pop when a like is sent */
-.liked {
+/* Liked by the current user; stays accent on hover */
+.action.liked {
   color: var(--accent);
 }
 
 .liked svg {
+  fill: var(--accent-soft);
+}
+
+/* One-shot pop when a like is added */
+.pop svg {
   animation: likePop 420ms var(--ease);
 }
 
