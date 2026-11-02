@@ -1,0 +1,341 @@
+/* Shared by /profile (editable) and /view_profile/[username] (read-only) */
+
+.container {
+  position: relative;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+/* Cover band: paper texture with an ink rule and a cobalt arc, no photo needed */
+.cover {
+  height: 168px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 88% 120%, rgba(43, 63, 214, 0.16) 0 28%, transparent 28.5%),
+    radial-gradient(circle at 88% 120%, transparent 0 36%, rgba(43, 63, 214, 0.1) 36.2% 36.6%, transparent 37%),
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 28px 28px,
+    var(--paper-deep);
+  animation: coverIn 900ms var(--ease) both;
+}
+
+@keyframes coverIn {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: 0 var(--s-5);
+  margin-top: -56px;
+}
+
+.avatarWrap {
+  position: relative;
+  display: block;
+  width: 128px;
+  height: 128px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px var(--paper), var(--shadow-2);
+}
+
+.avatarWrap img {
+  width: 100%;
+  height: 100%;
+}
+
+.editable {
+  cursor: pointer;
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(21, 22, 27, 0.55);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity var(--t-base) var(--ease);
+}
+
+.editable:hover .avatarOverlay,
+.editable:focus-within .avatarOverlay {
+  opacity: 1;
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding-bottom: var(--s-2);
+}
+
+.saveBtn {
+  animation: fadeIn var(--t-base) var(--ease);
+}
+
+.connectedTag,
+.pendingTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 var(--s-5);
+  border-radius: var(--r-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.connectedTag {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.pendingTag {
+  background: var(--paper-deep);
+  color: var(--muted);
+}
+
+.connectedTag::before,
+.pendingTag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------- Identity ---------- */
+
+.identity {
+  padding: var(--s-4) var(--s-5) 0;
+}
+
+.name,
+.nameEdit {
+  font-size: var(--text-3xl);
+}
+
+.nameEdit {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 0 2px;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease);
+}
+
+.nameEdit:hover {
+  border-bottom-color: var(--line-strong);
+}
+
+.nameEdit:focus {
+  border-bottom: 1px solid var(--accent);
+}
+
+.handle {
+  color: var(--muted);
+  margin-top: var(--s-1);
+}
+
+/* ---------- Body ---------- */
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: var(--s-7);
+  padding: var(--s-6) var(--s-5) 0;
+}
+
+.block + .block {
+  margin-top: var(--s-6);
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+
+.blockTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--s-3);
+}
+
+.blockHead .blockTitle {
+  margin-bottom: 0;
+}
+
+.bio {
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+  white-space: pre-wrap;
+}
+
+.bioEdit {
+  font-size: var(--text-base);
+}
+
+.emptyLine {
+  color: var(--subtle);
+  font-size: var(--text-sm);
+}
+
+/* Timeline: hairline spine with a node per entry */
+.timeline {
+  list-style: none;
+  position: relative;
+  padding-left: var(--s-5);
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--line-strong);
+}
+
+.timelineItem {
+  position: relative;
+  padding: var(--s-2) 0 var(--s-4);
+}
+
+.timelineItem::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--s-5) * -1);
+  top: 14px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+}
+
+.timelineItem:first-child::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.itemTitle {
+  font-weight: 600;
+}
+
+.itemMeta {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* ---------- Side: recent activity ---------- */
+
+.activity {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.postCard {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+}
+
+.postCard img,
+.thumbBlank {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--paper-deep);
+}
+
+.thumbBlank {
+  display: block;
+  background:
+    linear-gradient(135deg, transparent 46%, var(--line-strong) 47% 53%, transparent 54%),
+    var(--paper-deep);
+}
+
+.recentPostCaption {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- Modal form ---------- */
+
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-5);
+}
+
+.modalBody .btn {
+  margin-top: var(--s-2);
+}
+
+@media (max-width: 860px) {
+  .body {
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+  }
+}
+
+@media (max-width: 560px) {
+  .cover {
+    height: 120px;
+  }
+
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: -48px;
+    padding: 0 var(--s-4);
+  }
+
+  .avatarWrap {
+    width: 96px;
+    height: 96px;
+  }
+
+  .headActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .identity,
+  .body {
+    padding-inline: var(--s-4);
+  }
+}

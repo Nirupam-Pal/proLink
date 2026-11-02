@@ -1,131 +1,362 @@
-.container{
-    font-family: var(--font-poppins), "Poppins", sans-serif;
-    padding: 1.2rem;
-    background-image: linear-gradient(to bottom, white, #dbeafe, white);
+/* ---------- Hero ---------- */
+
+/* Full-bleed wrapper owns the background grid and clips it, so nothing overflows the page */
+.heroWrap {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.mainContainer{
+/* Faint paper grid behind the hero, fading out at the edges */
+.heroWrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 55% 70% at 65% 45%, #000 20%, transparent 75%);
+  opacity: 0.55;
+}
+
+.hero {
+  position: relative;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--s-7) var(--s-5) var(--s-8);
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  align-items: center;
+  gap: var(--s-6);
+  min-height: calc(92vh - var(--nav-h));
+}
+
+.heroEyebrow {
+  margin-bottom: var(--s-5);
+}
+
+.heroTitle {
+  font-size: var(--text-hero);
+  max-width: 11ch;
+}
+
+.heroLede {
+  margin-top: var(--s-5);
+  max-width: 34ch;
+  font-size: var(--text-lg);
+  color: var(--muted);
+  animation: rise var(--t-slow) 450ms var(--ease) both;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-6);
+  animation: rise var(--t-slow) 550ms var(--ease) both;
+}
+
+.heroVisual {
+  position: relative;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ---------- Section shared ---------- */
+
+.sectionTitle {
+  font-size: var(--text-3xl);
+  max-width: 14ch;
+  margin-top: var(--s-4);
+}
+
+/* ---------- Features ---------- */
+
+.features {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--s-9) var(--s-5);
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--s-7);
+  border-top: 1px solid var(--line);
+}
+
+.featuresHead {
+  position: sticky;
+  top: calc(var(--nav-h) + var(--s-6));
+  align-self: start;
+}
+
+.featureList {
+  list-style: none;
+}
+
+.feature {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  gap: var(--s-4);
+  align-items: start;
+  padding: var(--s-6) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.feature:first-child {
+  border-top: 1px solid var(--line);
+}
+
+/* Accent rule that draws across on hover */
+.feature::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 1px;
+  width: 100%;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--t-slow) var(--ease);
+}
+
+.feature:hover::after {
+  transform: scaleX(1);
+}
+
+.featureNo {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-xl);
+  color: var(--accent);
+  line-height: 1.4;
+}
+
+.featureTitle {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.featureBody {
+  margin-top: var(--s-2);
+  color: var(--muted);
+  max-width: 44ch;
+}
+
+.featureArrow {
+  width: 22px;
+  height: 22px;
+  margin-top: 6px;
+  color: var(--subtle);
+  transition: transform var(--t-base) var(--ease), color var(--t-base) var(--ease);
+}
+
+.feature:hover .featureArrow {
+  color: var(--accent);
+  transform: translate(3px, -3px);
+}
+
+/* ---------- How it works ---------- */
+
+.how {
+  background: var(--surface);
+  border-block: 1px solid var(--line);
+  padding: var(--s-9) var(--s-5);
+}
+
+.howHead {
+  max-width: var(--container);
+  margin: 0 auto var(--s-7);
+}
+
+.steps {
+  position: relative;
+  list-style: none;
+  max-width: var(--container);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-6);
+}
+
+/* Connecting line that draws in when the steps enter the viewport */
+.steps::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: var(--line-strong);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1200ms var(--ease);
+}
+
+.stepsVisible::before {
+  transform: scaleX(1);
+}
+
+.step {
+  position: relative;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity var(--t-slow) var(--ease), transform var(--t-slow) var(--ease);
+  transition-delay: calc(var(--i) * 140ms + 200ms);
+}
+
+.stepsVisible .step {
+  opacity: 1;
+  transform: none;
+}
+
+.stepNo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin-bottom: var(--s-5);
+}
+
+.step:first-child .stepNo {
+  background: var(--ink);
+  color: #fff;
+}
+
+.step h3 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.step p {
+  margin-top: var(--s-2);
+  color: var(--muted);
+  max-width: 30ch;
+}
+
+/* ---------- Closing ---------- */
+
+.closing {
+  padding: var(--s-9) var(--s-5);
+}
+
+.closingInner {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-6);
+}
+
+.closingQuote {
+  font-size: var(--text-3xl);
+  line-height: 1.1;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1024px) {
+  .hero {
+    grid-template-columns: 1fr 0.9fr;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    /* minmax(0, …) so the 3D stage can't widen the column past the viewport */
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--s-6) var(--s-4) var(--s-7);
+    text-align: center;
+    gap: var(--s-4);
+  }
+
+  .heroCopy {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 4rem;
-    padding-inline: 2rem;
-    height: 80vh;
-}
-
-.mainContainer_left{
-    flex: 0.5
-}
-
-.mainContainer_right{
-    flex: 0.5
-}
-
-.img{
-    height: 30rem;
-    width: 30rem;
-    background: transparent;
-}
-
-.mainContainer_left > p:nth-child(1) {
-    font-weight: 700;
-    font-size: 3rem;
-    background: linear-gradient(90deg, #50126f, #4f71f9, #0003ab);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-
-    /* Smooth animated shine */
-    animation: purpleGlowMove 3s ease-in-out infinite alternate;
-    background-size: 200% 200%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .mainContainer_left > p:nth-child(1) {
-        animation: none;
-    }
-}
-
-@keyframes purpleGlowMove {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 100% 50%;
-    }
-}
-.mainContainer_left > p:nth-child(2){
-    color: #4d4d4d;
-    font-size: 1.2rem;
-    margin-top: 0.8rem;
-}
-
-.mainContainer_left > div.buttonJoin{
-    width: fit-content;
-    cursor: pointer;
-    transition: all 0.5s;
-    margin-top: 0.8rem;
-    font-size: 1.rem;
-    color: white;
-    background: linear-gradient(to bottom, #472cd0, #4f6ef7, #0066ff);
-    padding-inline: 1.2rem;
-    padding-block: 0.6rem;
-    border-radius: 20px;
-    box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.25);
-}
-.mainContainer_left > div.buttonJoin:hover{
-    background: linear-gradient(to bottom, #0066ff, #4f6ef7, #472cd0);
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
-    transform: scale(1.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-@media screen and (max-width: 1024px) {
-    .img {
-      height: 22rem;
-      width: 22rem;
-    }
-  
-    .mainContainer_left > p:nth-child(1) {
-      font-size: 2.2rem;
-    }
   }
-  
-  @media screen and (max-width: 768px) {
-    .mainContainer {
-      flex-direction: column;
-      gap: 2rem;
-      text-align: center;
-      height: auto; /* let content adjust naturally */
-      padding: 2rem 1rem;
-    }
-  
-    .mainContainer_left > p:nth-child(1) {
-      font-size: 2rem;
-    }
-  
-    .mainContainer_left > p:nth-child(2) {
-      font-size: 1rem;
-    }
-  
-    .img {
-      height: 18rem;
-      width: 18rem;
-    }
-  
-    .mainContainer_left > div.buttonJoin {
-      margin: 1rem auto 0 auto; /* center button */
-    }
+
+  .heroTitle {
+    max-width: 12ch;
   }
-  
-  @media screen and (max-width: 480px) {
-    .mainContainer_left > p:nth-child(1) {
-      font-size: 1.6rem;
-    }
-  
-    .img {
-      height: 14rem;
-      width: 14rem;
-    }
+
+  .heroActions {
+    justify-content: center;
   }
-  
+
+  .features {
+    grid-template-columns: 1fr;
+    gap: var(--s-5);
+    padding: var(--s-8) var(--s-4);
+  }
+
+  .featuresHead {
+    position: static;
+  }
+
+  .feature {
+    grid-template-columns: 2.5rem 1fr;
+  }
+
+  .featureArrow {
+    display: none;
+  }
+
+  .how {
+    padding: var(--s-8) var(--s-4);
+  }
+
+  .steps {
+    grid-template-columns: 1fr;
+    gap: var(--s-5);
+  }
+
+  /* Vertical connector on mobile */
+  .steps::before {
+    top: 20px;
+    bottom: 20px;
+    left: 20px;
+    right: auto;
+    width: 1px;
+    height: auto;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .stepsVisible::before {
+    transform: scaleY(1);
+  }
+
+  .step {
+    padding-left: calc(40px + var(--s-4));
+  }
+
+  .stepNo {
+    position: absolute;
+    left: 0;
+    top: -6px;
+    margin: 0;
+  }
+
+  .closing {
+    padding: var(--s-8) var(--s-4);
+  }
+}

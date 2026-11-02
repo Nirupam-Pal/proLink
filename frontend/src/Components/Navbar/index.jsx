@@ -1,76 +1,88 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./styles.module.css";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { reset } from "@/config/redux/reducer/authReducer";
+
+export function Logo({ onClick }) {
+  return (
+    <button type="button" className={styles.brand} onClick={onClick} aria-label="ProLink home">
+      <svg className={styles.mark} viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="12" cy="16" r="7.5" fill="none" stroke="currentColor" strokeWidth="2.4" />
+        <circle cx="20" cy="16" r="7.5" fill="none" stroke="var(--accent)" strokeWidth="2.4" />
+      </svg>
+      <span className={styles.wordmark}>
+        Pro<em>Link</em>
+      </span>
+    </button>
+  );
+}
 
 const NavbarComponent = () => {
   const router = useRouter();
   const authState = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Only re-render when the threshold is crossed, not on every scroll event
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setIsOpen(false);
+    router.push("/login");
+    dispatch(reset());
+  };
+
+  const isProfile = router.pathname === "/profile";
 
   return (
-    <div className={styles.container}>
+    <header className={`${styles.container} ${scrolled || isOpen ? styles.scrolled : ""}`}>
       <nav className={styles.navbar}>
-        {/* Brand always visible */}
-        <h1
-          className={styles.navh1}
-          onClick={() => router.push("/")}
-        >
-          ProLink
-        </h1>
+        <Logo onClick={() => router.push("/")} />
 
         {/* Desktop options */}
         <div className={styles.navbarOptionsContainer}>
           {authState.profileFetched ? (
             <div className={styles.profile}>
-              <p
+              <button
+                type="button"
                 onClick={() => router.push("/profile")}
-                className={styles.proP}
+                className={`${styles.navLink} ${isProfile ? styles.active : ""}`}
+                aria-current={isProfile ? "page" : undefined}
               >
                 Profile
-              </p>
-              <p
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  router.push("/login");
-                  dispatch(reset());
-                }}
-                className={styles.buttonNav}
-              >
+              </button>
+              <button type="button" onClick={logout} className="btn btn-ghost btn-sm">
                 Logout
-              </p>
+              </button>
             </div>
           ) : (
-            <div
-              className={styles.buttonNav}
-              onClick={() => router.push("/login")}
-            >
-              <p>Be a part</p>
-            </div>
+            <button type="button" className="btn btn-accent btn-sm" onClick={() => router.push("/login")}>
+              Be a part
+              <svg className="btn-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           )}
         </div>
 
         {/* Hamburger for mobile */}
         <button
-          className={styles.hamburger}
+          type="button"
+          className={`${styles.hamburger} ${isOpen ? styles.hamburgerOpen : ""}`}
           aria-label="Toggle menu"
+          aria-expanded={isOpen}
           onClick={() => setIsOpen((prev) => !prev)}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
-            />
-          </svg>
+          <span />
+          <span />
         </button>
       </nav>
 
@@ -78,7 +90,8 @@ const NavbarComponent = () => {
       <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ""}`}>
         {authState.profileFetched ? (
           <div className={styles.mobileActions}>
-            <p
+            <button
+              type="button"
               onClick={() => {
                 setIsOpen(false);
                 router.push("/profile");
@@ -86,32 +99,27 @@ const NavbarComponent = () => {
               className={styles.menuItem}
             >
               Profile
-            </p>
-            <p
-              onClick={() => {
-                localStorage.removeItem("token");
-                setIsOpen(false);
-                router.push("/login");
-                dispatch(reset());
-              }}
-              className={styles.menuItem}
-            >
+            </button>
+            <button type="button" onClick={logout} className={styles.menuItem}>
               Logout
-            </p>
+            </button>
           </div>
         ) : (
-          <div
-            className={styles.menuItem}
-            onClick={() => {
-              setIsOpen(false);
-              router.push("/login");
-            }}
-          >
-            Be a part
+          <div className={styles.mobileActions}>
+            <button
+              type="button"
+              className={`btn btn-accent ${styles.menuCta}`}
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/login");
+              }}
+            >
+              Be a part
+            </button>
           </div>
         )}
       </div>
-    </div>
+    </header>
   );
 };
 
