@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { acceptConnectionrequest, downloadProfile, getAllUserProfile, getMyConnectionRequests, getUserAndProfile, getUserProfileAndUserBasedOnUserName, login, register, sendConnectionRequest, updateProfileData, updateUserProfile, uploadProfilePicture, whatAreMyConnections } from "../controllers/user.controller.js";
-import multer from "multer";
+import upload from "../config/multerConfig.js";
 
 const router = Router();
 

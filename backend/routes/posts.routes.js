@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { activeCheck, commentPost, createPost, delete_comment_of_user, deletePost, get_comment_by_post, increment_likes } from "../controllers/posts.controller.js";
-import multer from "multer";
+import upload from "../config/multerConfig.js";
 import { getAllPosts } from "../controllers/posts.controller.js";
 
 const router = Router()
